@@ -105,9 +105,6 @@
         <h3>Select Payment Method</h3>
         <select id="paymentMethod" onchange="showPaymentDetails()">
             <option value="">Select a method</option>
-            <option value="creditCard">Credit Card</option>
-            <option value="paypal">PayPal</option>
-            <option value="bankTransfer">Bank Transfer</option>
         </select>
     </div>
 
@@ -146,10 +143,29 @@
     <script>
         // Define a product lookup table (object) for the PIDs, names, and prices
         const products = {
-            '101': { name: 'Product 101', price: 100 },
-            '102': { name: 'Product 102', price: 200 },
-            '103': { name: 'Product 103', price: 150 },
+            '101': { 
+                name: 'Product 101', 
+                price: 100, 
+                paymentMethods: ['creditCard', 'paypal'] 
+            },
+            '102': { 
+                name: 'Product 102', 
+                price: 200, 
+                paymentMethods: ['paypal'] 
+            },
+            '103': { 
+                name: 'Product 103', 
+                price: 150, 
+                paymentMethods: ['bankTransfer'] 
+            },
             // Add more products as needed
+        };
+
+        // Payment method labels for display
+        const paymentMethodLabels = {
+            'creditCard': 'Credit Card',
+            'paypal': 'PayPal',
+            'bankTransfer': 'Bank Transfer'
         };
 
         // Fetch the query parameters
@@ -164,6 +180,16 @@
             // Set the item name and price from the lookup table
             document.getElementById('itemName').value = products[pid].name;
             document.getElementById('itemPrice').value = products[pid].price;
+
+            // Populate the payment methods dropdown based on the product
+            const paymentMethodSelect = document.getElementById('paymentMethod');
+            const availableMethods = products[pid].paymentMethods;
+            availableMethods.forEach(method => {
+                const option = document.createElement('option');
+                option.value = method;
+                option.text = paymentMethodLabels[method];
+                paymentMethodSelect.appendChild(option);
+            });
         }
 
         function applyDiscount() {
