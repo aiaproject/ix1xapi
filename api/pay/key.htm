@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Page</title>
+    
+    <!-- Google Font: Poppins Bold -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 50px;
+            background-color: #f4f4f4;
+        }
+
+        h1, h3, h4 {
+            font-weight: 700;
+        }
+
+        input, select {
+            padding: 10px;
+            margin: 10px 0;
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            font-size: 16px;
+            border-radius: 50px; /* Pill-shaped button */
+            cursor: pointer;
+            font-weight: 700;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .payment-methods, .payment-details {
+            margin-top: 20px;
+        }
+
+        #confirmationPopup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #fff;
+            border: 1px solid #ccc;
+            padding: 40px;
+            display: none;
+            text-align: center;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+        }
+
+        #confirmationPopup .checkmark {
+            font-size: 50px;
+            color: green;
+            margin-bottom: 20px;
+        }
+
+        #confirmationPopup h2 {
+            margin: 0 0 10px 0;
+        }
+
+        #confirmationPopup p {
+            margin: 0;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Payment Page</h1>
+    
+    <div>
+        <label for="itemName">Item Name:</label>
+        <input type="text" id="itemName" readonly>
+    </div>
+
+    <div>
+        <label for="itemPrice">Item Price ($):</label>
+        <input type="number" id="itemPrice" readonly>
+    </div>
+
+    <div>
+        <label for="discountCode">Discount Code:</label>
+        <input type="text" id="discountCode" placeholder="Enter discount code" oninput="applyDiscount()">
+    </div>
+
+    <div class="payment-methods" id="paymentMethods">
+        <h3>Select Payment Method</h3>
+        <select id="paymentMethod" onchange="showPaymentDetails()">
+            <option value="">Select a method</option>
+            <option value="creditCard">Credit Card</option>
+            <option value="paypal">PayPal</option>
+            <option value="bankTransfer">Bank Transfer</option>
+        </select>
+    </div>
+
+    <!-- Custom HTML for Credit Card -->
+    <div class="payment-details hidden" id="creditCardDetails">
+        <h4>Credit Card Details</h4>
+        <input type="text" placeholder="Card Number">
+        <input type="text" placeholder="Card Holder Name">
+        <input type="text" placeholder="Expiry Date (MM/YY)">
+        <input type="text" placeholder="CVV">
+    </div>
+
+    <!-- Custom HTML for PayPal -->
+    <div class="payment-details hidden" id="paypalDetails">
+        <h4>PayPal Details</h4>
+        <input type="email" placeholder="PayPal Email">
+    </div>
+
+    <!-- Custom HTML for Bank Transfer -->
+    <div class="payment-details hidden" id="bankTransferDetails">
+        <h4>Bank Transfer Details</h4>
+        <input type="text" placeholder="Account Number">
+        <input type="text" placeholder="Bank Name">
+        <input type="text" placeholder="Routing Number">
+    </div>
+
+    <button onclick="completeOrder()">Complete Order</button>
+
+    <!-- Custom Confirmation Popup -->
+    <div id="confirmationPopup">
+        <div class="checkmark">✔️</div>
+        <h2>Order Confirmed!</h2>
+        <p id="orderDetails"></p>
+    </div>
+
+    <script>
+        // Define a product lookup table (object) for the PIDs, names, and prices
+        const products = {
+            '101': { name: 'Product 101', price: 100 },
+            '102': { name: 'Product 102', price: 200 },
+            '103': { name: 'Product 103', price: 150 },
+            // Add more products as needed
+        };
+
+        // Fetch the query parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const pid = urlParams.get('pid'); // Product ID
+
+        // Check if the PID exists
+        if (!pid || !products[pid]) {
+            // Redirect to error page if no PID or invalid PID is found
+            window.location.href = 'https://ix1x.com/api/pay/error.no.pid.xml';
+        } else {
+            // Set the item name and price from the lookup table
+            document.getElementById('itemName').value = products[pid].name;
+            document.getElementById('itemPrice').value = products[pid].price;
+        }
+
+        function applyDiscount() {
+            const discountCode = document.getElementById('discountCode').value;
+            const paymentMethodsDiv = document.getElementById('paymentMethods');
+            const paymentDetailsDivs = document.querySelectorAll('.payment-details');
+
+            if (discountCode === '100OFF') {
+                // Hide payment methods and details if discount gives 100% off
+                paymentMethodsDiv.classList.add('hidden');
+                paymentDetailsDivs.forEach(div => div.classList.add('hidden'));
+                document.getElementById('itemPrice').value = '0.00';
+            } else {
+                // Show payment methods if not 100% off
+                paymentMethodsDiv.classList.remove('hidden');
+                // Reset to the original price from the lookup table
+                document.getElementById('itemPrice').value = products[pid].price;
+            }
+        }
+
+        function showPaymentDetails() {
+            const selectedMethod = document.getElementById('paymentMethod').value;
+            const paymentDetailsDivs = document.querySelectorAll('.payment-details');
+            
+            // Hide all payment method details
+            paymentDetailsDivs.forEach(div => div.classList.add('hidden'));
+            
+            // Show the selected payment method details
+            if (selectedMethod) {
+                document.getElementById(`${selectedMethod}Details`).classList.remove('hidden');
+            }
+        }
+
+        function completeOrder() {
+            const itemName = document.getElementById('itemName').value;
+            const itemPrice = document.getElementById('itemPrice').value;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const orderDetails = document.getElementById('orderDetails');
+
+            let redirectUrl = '';
+
+            // Set the confirmation details and popup
+            if (itemPrice == 0) {
+                orderDetails.innerText = `Order completed for ${itemName}. No payment required.`;
+            } else {
+                orderDetails.innerText = `Order completed for ${itemName} using ${paymentMethod}. Total: $${itemPrice}`;
+            }
+
+            // Display the custom confirmation popup
+            document.getElementById('confirmationPopup').style.display = 'block';
+
+            // Redirect based on the product ID (you can add more cases here)
+            if (pid === '101') {
+                redirectUrl = 'https://example.com/redirect/product101';
+            } else if (pid === '102') {
+                redirectUrl = 'https://example.com/redirect/product102';
+            } else {
+                redirectUrl = 'https://example.com/redirect/default';
+            }
+
+            // Redirect after 3 seconds
+            setTimeout(() => {
+                window.location.href = redirectUrl;
+            }, 3000);
+        }
+    </script>
+
+</body>
+</html>
