@@ -201,10 +201,7 @@
     </div>
 
     <!-- Custom HTML for PayPal -->
-    <div class="payment-details hidden" id="paypalDetails">
-        <h4>PayPal Details</h4>
-        <input type="email" placeholder="PayPal Email">
-    </div>
+<a href="https://buy.stripe.com/eVa5mT26D60M3lu146" class="stripe-connect"><span>Connect with</span></a> 
 
     <!-- Custom HTML for Bank Transfer -->
     <div class="payment-details hidden" id="bankTransferDetails">
@@ -234,7 +231,7 @@
             '028291.2982902.20829': { 
                 name: 'BadBoyTyler Full Access [FREE FOR A LIMITED TIME- YOU MUST COMPLETE ORDER THROUGH STRIPE]', 
                 price: 0.01, 
-                paymentMethods: ['stripeNC'] 
+                paymentMethods: ['paypal'] 
             },
             '103': { 
                 name: 'Product 103', 
@@ -247,7 +244,7 @@
         // Payment method labels for display
         const paymentMethodLabels = {
             'IX1XpayAPI': 'IX1X Pay',
-            'stripeNC': 'Stripe',
+            'paypal': 'Stripe',
            
         };
 
